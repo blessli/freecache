@@ -58,7 +58,7 @@ func NewCacheCustomTimer(size int, timer Timer) (cache *Cache) {
 // but it can be evicted when cache is full.
 func (cache *Cache) Set(key, value []byte, expireSeconds int) (err error) {
 	hashVal := hashFunc(key)
-	segID := hashVal & segmentAndOpVal
+	segID := hashVal & segmentAndOpVal // eg: 15997673941747208908 & 255 = 204
 	cache.locks[segID].Lock()
 	err = cache.segments[segID].set(key, value, hashVal, expireSeconds)
 	cache.locks[segID].Unlock()
