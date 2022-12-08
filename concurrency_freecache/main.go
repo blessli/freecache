@@ -10,9 +10,9 @@ import (
 	"time"
 	_ "net/http/pprof"
 
-	"github.com/coocood/freecache"
+	freecache "github.com/coocood/freecache"
 )
-var goroutineNums = flag.Int("gn", 2, "goroutine nums")
+var goroutineNums = flag.Int("gn", 20, "goroutine nums")
 func main() {
 	flag.Parse()
 	go func() {
@@ -20,8 +20,7 @@ func main() {
 	}()
  
 	rand.Seed(time.Now().Unix())
-	// lc := cache.New(time.Minute*5, time.Minute*2)
-	lc := freecache.NewCache(256 * 1024 * 1024) // 256MB
+	lc := freecache.NewCache(256 * 1024 * 1024)
 	log.Printf("start at:%v", time.Now())
 	aaaKey := "aaa:%d:buy:cnt"
 	log.Println("set run over")
@@ -32,7 +31,7 @@ func main() {
 				key := fmt.Sprintf(aaaKey, rand.Int())
 				newKey := fmt.Sprintf("%s:%d", key, rand.Int())
 				v := rand.Int()
-				lc.Set([]byte(newKey), []byte(strconv.Itoa(v)), 10*int(time.Millisecond))
+				lc.Set([]byte(newKey), []byte(strconv.Itoa(v)), -1)
 			}
 		}(i)
 	}
