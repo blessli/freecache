@@ -27,7 +27,7 @@ func NewServer(cacheSize int) (server *Server) {
 	// server.cache = freecache.NewCache(cacheSize)
 	server.cache = gocache.New(30*time.Minute, 10*time.Minute)
 	ss := ""
-	for i := 0; i < 1e3; i++ {
+	for i := 0; i < 1e2; i++ {
 		str := uuid.New().String()
 		ss += str
 	}
