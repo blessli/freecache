@@ -1,7 +1,9 @@
 package main
 
 import (
-	"encoding/json"
+	// "encoding/json"
+	// json "github.com/json-iterator/go"
+	json "github.com/goccy/go-json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -10,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
+	"sync/atomic"
 	"time"
 
 	"github.com/coocood/freecache/utils"
@@ -19,6 +22,7 @@ import (
 )
 
 var server *Server
+var ops uint64
 
 type Server struct {
 	redisClient *redis.Client
@@ -110,7 +114,7 @@ func (es *echoServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.
 		key := fmt.Sprintf("solitest:%d", rand.Int()%(1e3-1))
 		data, err := server.redisClient.Get(key).Result()
 		if err != nil {
-			log.Printf("redis get error: %s|%v\n", key, err)
+			log.Printf("redis get error: %s|%v %d\n", key, err,len(data))
 			return
 		}
 		acts := []*Activity{}
@@ -123,6 +127,8 @@ func (es *echoServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.
 		err = c.AsyncWrite(frame1)
 		if err != nil {
 			fmt.Println(err.Error())
+		} else {
+			atomic.AddUint64(&ops, 1)
 		}
 	}()
 	return
@@ -150,10 +156,11 @@ func main() {
 	}()
 	// 查看 cache 中 key 的数量
 	go func() {
-		ticker := time.NewTicker(time.Second)
+		ticker := time.NewTicker(10*time.Second)
 		for {
 			select {
 			case <-ticker.C:
+				log.Printf("ops count per 10s:%d", atomic.LoadUint64(&ops))
 			}
 		}
 	}()
